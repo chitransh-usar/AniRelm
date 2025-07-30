@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Pinterest</title>
+    <link rel="stylesheet" href="/stylesheets/feed.css">
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .modal-image-container {
+            position: relative;
+            flex: 1;
+            max-width: 35%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal img {
+            width: 100%;
+            height: auto;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            display: block;
+        }
+
+        .modal-sidebar {
+            position: relative;
+            width: 200px;
+            background: transparent;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #fff;
+            font-size: 32px;
+            font-weight: 300;
+            cursor: pointer;
+            z-index: 2001;
+            background: rgba(0, 0, 0, 0.5);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+
+        .save-btn {
+            background: transparent;
+            color: #e60023;
+            border: 2px solid #e60023;
+            padding: 20px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 28px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(230, 0, 35, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-width: 180px;
+            width: 100%;
+        }
+
+        .save-btn:hover {
+            background: #e60023;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(230, 0, 35, 0.4);
+        }
+
+        .save-btn:disabled {
+            background: transparent;
+            color: #9ca3af;
+            border-color: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .save-btn.saved {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+
+        .save-btn.saved:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+
+        .save-icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .modal-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .modal-image-container {
+                max-width: 100%;
+            }
+
+            .modal-sidebar {
+                width: 100%;
+                max-width: 300px;
+                padding: 20px;
+            }
+        }
+
+        /* Additional styles for uploaded images */
+        .container .box .caption strong {
+            color: #00ff88;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .container .box .caption {
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+     <div class="logo">
+       <img src="/images/logo.png" alt="">
+         
+     </div>
+     <ul class="navLink">
+       
+       <li><a href="/profile"><%= user ? user.username : 'Profile' %></a></li>
+     </ul>
+     <div class="lines">
+         <div class="l1"></div>
+         <div class="l2"></div>
+         <div class="l3"></div>
+     </div>
+   </nav>
+
+    <!-- Modal for full image view -->
+    <div id="imageModal" class="modal">
+        <div class="modal-container">
+            <span class="close">&times;</span>
+            <div class="modal-content">
+                <div class="modal-image-container">
+                    <img id="modalImage" alt="Anime Image">
+                </div>
+                <div class="modal-sidebar">
+                    <button class="save-btn" id="saveBtn">
+                        <svg class="save-icon" viewBox="0 0 24 24">
+                            <path d="M19 21L12 16L5 21V5C5 3.9 5.9 3 7 3H17C18.1 3 19 3.9 19 5V21Z"/>
+                        </svg>
+                        Add to Saved
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+ 
+<div class="container">
+    <!-- Dynamic posts from users -->
+    <% if (posts && posts.length > 0) { %>
+      <% posts.forEach(function(post) { %>
+        <div class="box">
+          <img src="/images/uploads/<%= post.image %>" alt="<%= post.imageText %>" onclick="openModal(this.src, '<%= post.imageText %>')">
+          <div class="caption">
+            <strong><%= post.user ? post.user.username : 'Unknown' %></strong><br>
+            <%= post.imageText %>
+          </div>
+        </div>
+      <% }); %>
+    <% } %>
+    
+    <!-- Static feed images -->
+    <div class="box">
+        <img src="/images/feed/f63c4e36-eaaa-4707-98e1-4153a99fad90.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Beautiful Anime Artwork')">
+        <div class="caption">Beautiful Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/Light Yagami is the main protagonist of the manga….jpeg" alt="Light Yagami" onclick="openModal(this.src, 'Light Yagami - Death Note')">
+        <div class="caption">Light Yagami - Death Note</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/e31d29aa-406d-4bbf-9caf-4dab0435e6b0.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Stunning Anime Character')">
+        <div class="caption">Stunning Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/1d4978a2-3fe3-4253-b6f8-3c522bdee220.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Elegant Anime Artwork')">
+        <div class="caption">Elegant Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/02a12d09-0c59-4931-9661-55534e16a528.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Cute Anime Character')">
+        <div class="caption">Cute Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/caa9548f-1280-42c9-86b3-d4d9fe277ad1.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Amazing Anime Art')">
+        <div class="caption">Amazing Anime Art</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/41f21342-b304-4a79-b13b-963a859cbda6.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Beautiful Anime Character')">
+        <div class="caption">Beautiful Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/download (2).jpeg" alt="Anime Art" onclick="openModal(this.src, 'Stunning Anime Artwork')">
+        <div class="caption">Stunning Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/b15c4a0b-8114-43fc-b866-e025c91b678c.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Elegant Anime Character')">
+        <div class="caption">Elegant Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/202432c0-33a9-4e05-be0e-369f3f951a50.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Beautiful Anime Artwork')">
+        <div class="caption">Beautiful Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/demonslayer anime fyp japanesanime….jpeg" alt="Demon Slayer" onclick="openModal(this.src, 'Demon Slayer Anime')">
+        <div class="caption">Demon Slayer Anime</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/d074ad3e-8f5a-44b5-b3b0-310380e0be4b.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Cute Anime Character')">
+        <div class="caption">Cute Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/c11e1866-3589-4613-a3d1-8ee2b522c3cb.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Stunning Anime Art')">
+        <div class="caption">Stunning Anime Art</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/Tengen Uzui.jpeg" alt="Tengen Uzui" onclick="openModal(this.src, 'Tengen Uzui - Demon Slayer')">
+        <div class="caption">Tengen Uzui - Demon Slayer</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/0db974e5-78af-448f-acd9-c15cdee7d7f9.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Beautiful Anime Character')">
+        <div class="caption">Beautiful Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/a cute anime boy.jpeg" alt="Cute Anime Boy" onclick="openModal(this.src, 'A Cute Anime Boy')">
+        <div class="caption">A Cute Anime Boy</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/381e961c-6651-4e15-9f9e-b905955baf4c.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Amazing Anime Artwork')">
+        <div class="caption">Amazing Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/368e0fe3-4d7d-4d26-a5df-2b6e0f2517c1.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Elegant Anime Character')">
+        <div class="caption">Elegant Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/a52598a3-9bfe-4bff-860c-63b55a178e67.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Beautiful Anime Art')">
+        <div class="caption">Beautiful Anime Art</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/65930ac8-d1ee-49eb-9bc7-807651f41980.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Stunning Anime Character')">
+        <div class="caption">Stunning Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/998424cd-e54c-4153-8c49-8ec5b15742c5.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Amazing Anime Artwork')">
+        <div class="caption">Amazing Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/7b0b5293-4591-4ba5-b87c-55596325a4d1.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Cute Anime Character')">
+        <div class="caption">Cute Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/ddcabbb0-f3e2-47d7-84ca-709aac3a4908.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Beautiful Anime Art')">
+        <div class="caption">Beautiful Anime Art</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/3cc23f2b-39f7-4fd5-a842-2d74817cdc63.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Elegant Anime Character')">
+        <div class="caption">Elegant Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/2dda0482-8793-4326-9aff-27b20a87cbfc.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Stunning Anime Artwork')">
+        <div class="caption">Stunning Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/eb9060df-36b7-4581-a2eb-8daa12e81073.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Beautiful Anime Character')">
+        <div class="caption">Beautiful Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/cfc3a5dd-737b-4397-813c-44df3a731947.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Amazing Anime Art')">
+        <div class="caption">Amazing Anime Art</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/Rent a girlfriend _ rent a girlfriend wallpaper….jpeg" alt="Rent a Girlfriend" onclick="openModal(this.src, 'Rent a Girlfriend Wallpaper')">
+        <div class="caption">Rent a Girlfriend Wallpaper</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/387d60e2-9744-47d0-9d27-cacb1a848d1e.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Cute Anime Character')">
+        <div class="caption">Cute Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/5dffbd6f-8cac-4d76-a76e-14a508be7b92.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Beautiful Anime Artwork')">
+        <div class="caption">Beautiful Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/Wallpaper Mai Sakurajima Seishun Buta Yarou wa….jpeg" alt="Mai Sakurajima" onclick="openModal(this.src, 'Mai Sakurajima - Bunny Girl Senpai')">
+        <div class="caption">Mai Sakurajima - Bunny Girl Senpai</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/Rascal Does Not Dream of a Bunny Girl Senpai….jpeg" alt="Bunny Girl Senpai" onclick="openModal(this.src, 'Bunny Girl Senpai')">
+        <div class="caption">Bunny Girl Senpai</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/Spy x Family wallpaper.jpeg" alt="Spy x Family" onclick="openModal(this.src, 'Spy x Family Wallpaper')">
+        <div class="caption">Spy x Family Wallpaper</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/43f0c3f4-77e4-4d1f-8f21-760620014a1d.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Elegant Anime Character')">
+        <div class="caption">Elegant Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/95cf4e22-5ca2-4d54-9a37-364f49065f3f.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Amazing Anime Artwork')">
+        <div class="caption">Amazing Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/e686cd94-ccab-4706-bbc8-542e909aae52.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Beautiful Anime Character')">
+        <div class="caption">Beautiful Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/c4a7b3e6-73b5-4d4c-a128-5b530bcc077d.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Stunning Anime Art')">
+        <div class="caption">Stunning Anime Art</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/High-quality aesthetic anime edit of Kitagawa….jpeg" alt="Kitagawa" onclick="openModal(this.src, 'High-quality Aesthetic Anime Edit of Kitagawa')">
+        <div class="caption">High-quality Aesthetic Anime Edit of Kitagawa</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/b1a52917-55f7-4728-9f6d-b0fa95063281.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Cute Anime Character')">
+        <div class="caption">Cute Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/a34435f7-d47e-4aa6-b2ce-0b00106b0e98.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Beautiful Anime Artwork')">
+        <div class="caption">Beautiful Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/ed37a74e-da0f-43f7-87b3-d183da928fe2.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Elegant Anime Character')">
+        <div class="caption">Elegant Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/499980f8-3a82-45a6-9522-04ffb8296496.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Amazing Anime Art')">
+        <div class="caption">Amazing Anime Art</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/5de421ed-b08d-4d04-a62f-898363b0c438.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Stunning Anime Character')">
+        <div class="caption">Stunning Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/1e658651-6168-4e2b-8c2b-319ac2ac545a.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Beautiful Anime Artwork')">
+        <div class="caption">Beautiful Anime Artwork</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/c754476b-eebb-4433-8d13-e896d0cc4459.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Cute Anime Character')">
+        <div class="caption">Cute Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/c722c84d-b139-409e-a972-0bf68e9849fd.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Amazing Anime Art')">
+        <div class="caption">Amazing Anime Art</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/71f63fb3-473c-4e80-82cb-0ef6ca5a2d9c.jpeg" alt="Anime Character" onclick="openModal(this.src, 'Elegant Anime Character')">
+        <div class="caption">Elegant Anime Character</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/NEZUKO & ZENITSU Wallpaper ✪.jpeg" alt="Nezuko & Zenitsu" onclick="openModal(this.src, 'Nezuko & Zenitsu Wallpaper')">
+        <div class="caption">Nezuko & Zenitsu Wallpaper</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/Luffy 5 gear.jpeg" alt="Luffy 5th Gear" onclick="openModal(this.src, 'Luffy 5th Gear - One Piece')">
+        <div class="caption">Luffy 5th Gear - One Piece</div>
+    </div>
+    
+    <div class="box">
+        <img src="/images/feed/download.jpeg" alt="Anime Art" onclick="openModal(this.src, 'Beautiful Anime Artwork')">
+        <div class="caption">Beautiful Anime Artwork</div>
+    </div>
+
+   
+
+
+   <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+    <script src="/javascripts/feed.js"></script>
+    <script>
+        // Modal functionality
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const saveBtn = document.getElementById('saveBtn');
+        const closeBtn = document.querySelector('.close');
+        
+        let currentImageUrl = '';
+        let currentCaption = '';
+
+        function openModal(imageSrc, caption) {
+            modal.style.display = 'block';
+            modalImg.src = imageSrc;
+            currentImageUrl = imageSrc;
+            currentCaption = caption;
+            
+            // Reset save button
+            saveBtn.innerHTML = `
+                <svg class="save-icon" viewBox="0 0 24 24">
+                    <path d="M19 21L12 16L5 21V5C5 3.9 5.9 3 7 3H17C18.1 3 19 3.9 19 5V21Z"/>
+                </svg>
+                Add to Saved
+            `;
+            saveBtn.className = 'save-btn';
+            saveBtn.disabled = false;
+        }
+
+        // Close modal when clicking X
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Save image functionality
+        saveBtn.addEventListener('click', async function() {
+            try {
+                const response = await fetch('/save-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        imageUrl: currentImageUrl,
+                        caption: currentCaption
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    saveBtn.innerHTML = `
+                        <svg class="save-icon" viewBox="0 0 24 24">
+                            <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
+                        </svg>
+                        Saved
+                    `;
+                    saveBtn.className = 'save-btn saved';
+                    saveBtn.disabled = true;
+                    
+                    // Show success message
+                    setTimeout(() => {
+                        alert('Image saved to your profile!');
+                    }, 500);
+                } else {
+                    if (data.message === 'Image already saved') {
+                        saveBtn.innerHTML = `
+                            <svg class="save-icon" viewBox="0 0 24 24">
+                                <path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/>
+                            </svg>
+                            Saved
+                        `;
+                        saveBtn.className = 'save-btn saved';
+                        saveBtn.disabled = true;
+                    } else {
+                        alert('Failed to save image: ' + data.message);
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving image:', error);
+                alert('Failed to save image. Please try again.');
+            }
+        });
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <!-- GSAP CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <style>
+      body {
+        background: #000 !important;
+      }
+      .animation-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 0;
+        overflow: hidden;
+      }
+      .bg-filter {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.28);
+        z-index: 1;
+        pointer-events: none;
+      }
+      .animated-row {
+        display: flex;
+        flex-direction: row;
+        position: absolute;
+        left: 0;
+        width: 100vw;
+        height: 180px;
+        gap: 40px;
+      }
+
+      /* Mobile responsive for background images */
+      @media (max-width: 768px) {
+        .animated-row {
+          gap: 10px;
+          height: 160px;
+        }
+        .animated-row img {
+          width: 220px;
+          height: 140px;
+        }
+        .animated-row.row1 {
+          top: 8vh;
+        }
+        .animated-row.row2 {
+          top: 32vh;
+        }
+        .animated-row.row3 {
+          top: 56vh;
+        }
+      }
+      .animated-row img {
+        width: 240px;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 18px;
+        box-shadow: 0 4px 24px #000a;
+      }
+      .animated-row.row1 {
+        top: 10vh;
+      }
+      .animated-row.row2 {
+        top: 38vh;
+      }
+      .animated-row.row3 {
+        top: 66vh;
+      }
+      .container {
+        position: relative;
+        z-index: 2;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="animation-bg">
+      <div class="bg-filter"></div>
+      <div class="animated-row row1">
+        <img src="/images/1.jpeg" />
+        <img src="/images/2.jpeg" />
+        <img src="/images/3.jpeg" />
+        <img src="/images/4.jpeg" />
+        <img src="/images/5.jpeg" />
+        <img src="/images/6.jpeg" />
+      </div>
+      <div class="animated-row row2">
+        <img src="/images/7.jpeg" />
+        <img src="/images/8.jpeg" />
+        <img src="/images/9.jpeg" />
+        <img src="/images/10.jpeg" />
+        <img src="/images/11.jpeg" />
+        <img src="/images/12.jpeg" />
+      </div>
+      <div class="animated-row row3">
+        <img src="/images/13.jpeg" />
+        <img src="/images/14.jpeg" />
+        <img src="/images/15.jpeg" />
+        <img src="/images/16.jpeg" />
+        <img src="/images/17.jpeg" />
+        <img src="/images/18.jpeg" />
+      </div>
+    </div>
+    <div class="container">
+      <div class="content">
+        <!--pinterest logo-->
+        <img src="/images/logo.png" alt="pin logo" class="img1" />
+        <p class="header">Log in to see more.</p>
+
+        <form action="/register" method="post">
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            class="detail"
+          /><br />
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            class="detail"
+          /><br />
+          <input
+            type="text"
+            name="fullname"
+            placeholder="Full Name"
+            class="detail"
+          /><br />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            class="detail"
+          />
+          <button class="btn int">Register Now</button>
+        </form>
+
+        <footer>
+          <p>
+            By continuing, you agree to AniRelm's
+            <b>Terms of Service, Privacy policy.</b>
+          </p>
+          <hr />
+        </footer>
+        <p class="signup-link">
+          Already on AniRelm ? <a href="/login">Login</a>
+        </p>
+      </div>
+    </div>
+    <script src="/javascripts/animatedRows.js"></script>
+  </body>
+</html>

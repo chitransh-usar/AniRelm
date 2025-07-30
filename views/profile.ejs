@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bootstrap demo</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr"
+      crossorigin="anonymous"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-black text-white font-inter antialiased px-3">
+    <!-- Container -->
+    <main
+      class="w-[90vw] mx-auto my-8 bg-gray-900 rounded-2xl shadow-lg overflow-hidden border border-gray-700"
+    >
+      <!-- Cover image -->
+      <div
+        class="relative h-28 sm:h-36 bg-gradient-to-tr from-[#0f172a] via-[#1e293b] to-[#0f172a] rounded-t-2xl overflow-hidden"
+      >
+        <img
+          src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/0477d374-dae5-45ed-8c6d-74830089e530.png"
+          alt="Modern abstract dark navy blue gradient background with smooth shapes and textures"
+          class="w-full h-full object-cover"
+          onerror="this.style.display='none'"
+        />
+        <!-- FEED link positioned at top left -->
+        <div class="absolute top-4 left-4">
+          <a
+            href="/feed"
+            class="btn btn-info btn-sm"
+            style="width: 80px; color: black"
+            >FEED</a
+          >
+        </div>
+        <!-- Logout button positioned at top right -->
+        <div class="absolute top-4 right-4">
+          <a href="/logout" class="btn btn-info btn-sm">Log Out</a>
+        </div>
+      </div>
+
+      <!-- Profile & user info -->
+      <section
+        class="relative px-6 sm:px-10 -mt-16 flex flex-col items-center text-center"
+      >
+        <div
+          class="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full border-4 border-white shadow-lg bg-white overflow-hidden profile-pic-container"
+        >
+          <img
+            src="<%= user.dp ? '/images/uploads/' + user.dp : 'https://i.pinimg.com/736x/d0/60/37/d06037ab90de46a4090961c50e6b4917.jpg' %>"
+            alt="Avatar"
+            class="w-full h-full object-cover profile-pic"
+          />
+          <div class="profile-pic-overlay">
+            <div class="plus-icon">+</div>
+          </div>
+          <input
+            type="file"
+            id="profile-pic-input"
+            accept="image/*"
+            style="display: none"
+          />
+        </div>
+        <p class="text-sm text-gray-400 mt-3 username-mobile">
+          <%= user.username %>
+        </p>
+        <h1
+          class="text-2xl sm:text-3xl font-semibold mt-1 tracking-tight text-white"
+        >
+          <%= user.fullname %>
+        </h1>
+
+        <!-- Upload Button -->
+        <div class="upload-button-section mt-6 mb-4">
+          <button id="upload-toggle-btn" class="upload-toggle-btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Upload
+          </button>
+        </div>
+
+        <!-- Success Message -->
+        <div id="success-message" class="success-message" style="display: none">
+          <div class="success-content">
+            <svg class="success-icon" viewBox="0 0 24 24">
+              <path
+                d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"
+              />
+            </svg>
+            <span
+              >Image uploaded successfully! Check the feed to see your
+              post.</span
+            >
+          </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div
+          class="upload-section mt-6 mb-8"
+          id="upload-form-container"
+          style="display: none"
+        >
+          <form
+            action="/upload"
+            method="post"
+            enctype="multipart/form-data"
+            class="upload-form"
+            id="upload-form"
+          >
+            <div class="form-row">
+              <input
+                type="text"
+                name="filecaption"
+                placeholder="some caption"
+                class="caption-input"
+              />
+              <div class="file-input-wrapper">
+                <input
+                  type="file"
+                  name="file"
+                  id="file-input"
+                  class="file-input"
+                />
+                <label for="file-input" class="file-label">Choose File</label>
+                <span class="file-status">No file chosen</span>
+              </div>
+              <button type="submit" class="submit-btn">Submit</button>
+              <button type="button" class="cancel-btn" onclick="cancelUpload()">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Posts Section -->
+        <div class="posts-section mt-8">
+          <h3 class="text-xl font-semibold text-white mb-4 text-center">
+            My Posts
+          </h3>
+          <div class="container">
+            <% user.posts.forEach(function(post){%>
+            <div class="box">
+              <img
+                src="/images/uploads/<%=post.image%>"
+                alt="<%= post.imageText %>"
+                onclick="openImageModal('/images/uploads/<%=post.image%>', '<%= post.imageText %>', '<%= post._id %>')"
+              />
+              <div class="caption"><%= post.imageText %></div>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+
+        <!-- Image Modal for Profile -->
+        <div id="imageModal" class="modal">
+          <div class="modal-container">
+            <span class="close">&times;</span>
+            <div class="modal-content">
+              <div class="modal-image-container">
+                <img id="modalImage" alt="Image" />
+              </div>
+              <div class="modal-sidebar">
+                <button class="delete-btn" id="deleteBtn">
+                  <svg class="delete-icon" viewBox="0 0 24 24">
+                    <path
+                      d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                    />
+                  </svg>
+                  Delete Image
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saved Image Modal -->
+        <div id="savedImageModal" class="modal">
+          <div class="modal-container">
+            <span class="close-saved">&times;</span>
+            <div class="modal-content">
+              <div class="modal-image-container">
+                <img id="savedModalImage" alt="Saved Image" />
+              </div>
+              <div class="modal-sidebar">
+                <button class="unsave-btn" id="unsaveBtn">
+                  <svg class="unsave-icon" viewBox="0 0 24 24">
+                    <path
+                      d="M19 21L12 16L5 21V5C5 3.9 5.9 3 7 3H17C18.1 3 19 3.9 19 5V21Z"
+                    />
+                  </svg>
+                  Unsave Image
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Saved Images Section -->
+        <div class="saved-section mt-12">
+          <h3 class="text-xl font-semibold text-white mb-4 text-center">
+            Saved Images
+          </h3>
+          <% if (user.savedImages && user.savedImages.length > 0) { %>
+          <div class="container">
+            <% user.savedImages.forEach(function(savedImage, index){%>
+                         <div class="box">
+               <img
+                 src="<%= savedImage.imageUrl %>"
+                 alt="<%= savedImage.caption %>"
+                 data-image-url="<%= savedImage.imageUrl %>"
+                 data-caption="<%= savedImage.caption %>"
+                 data-index="<%= index %>"
+                 class="saved-image-clickable"
+                 onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjM0I0MjU5Ii8+Cjx0ZXh0IHg9IjEwMCIgeT0iMTAwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5Q0EzQUYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBsb2FkIGVycm9yPC90ZXh0Pgo8L3N2Zz4K'; console.log('Saved image failed to load:', this.src);"
+               />
+               <div class="caption"><%= savedImage.caption %></div>
+             </div>
+            <% }) %>
+          </div>
+          <% } else { %>
+          <div class="empty-saved text-center py-8">
+            <div class="empty-icon mb-4">
+              <svg
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M19 21L12 16L5 21V5C5 3.9 5.9 3 7 3H17C18.1 3 19 3.9 19 5V21Z"
+                  stroke="#9CA3AF"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <p class="text-gray-500 text-lg">No saved images yet</p>
+            <p class="text-gray-400 text-sm mt-2">
+              Images you save from the feed will appear here
+            </p>
+            <a
+              href="/feed"
+              class="inline-block mt-4 px-6 py-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+            >
+              Browse Feed
+            </a>
+          </div>
+          <% } %>
+        </div>
+      </section>
+    </main>
+
+    <style>
+      /* Upload Button Styles */
+      .upload-button-section {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      .upload-toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: #e60023;
+        color: white;
+        border: none;
+        border-radius: 24px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 8px rgba(230, 0, 35, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .upload-toggle-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .upload-toggle-btn:hover::before {
+        left: 100%;
+      }
+
+      .upload-toggle-btn:hover {
+        background: #ad081b;
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(230, 0, 35, 0.5);
+      }
+
+      .upload-toggle-btn:active {
+        transform: translateY(-1px) scale(0.98);
+      }
+
+      .upload-toggle-btn svg {
+        width: 20px;
+        height: 20px;
+        transition: transform 0.3s ease;
+      }
+
+      .upload-toggle-btn:hover svg {
+        transform: rotate(90deg);
+      }
+
+      /* Upload Form Styles */
+      .upload-section {
+        width: 100%;
+        max-width: 600px;
+        margin: 0 auto;
+        animation: slideDown 0.3s ease;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .upload-form {
+        background: #1f2937;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        border: 1px solid #374151;
+      }
+
+      .form-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .caption-input {
+        flex: 1;
+        min-width: 150px;
+        padding: 8px 12px;
+        border: 1px solid #4b5563;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #f9fafb;
+        background: #374151;
+        transition: all 0.3s ease;
+      }
+
+      .caption-input:focus {
+        border-color: #00ff88;
+        box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+        outline: none;
+        transform: translateY(-1px);
+      }
+
+      .caption-input::placeholder {
+        color: #9ca3af;
+        transition: opacity 0.3s ease;
+      }
+
+      .caption-input:focus::placeholder {
+        opacity: 0.7;
+      }
+
+      .file-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+      }
+
+      .file-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .file-label {
+        padding: 8px 16px;
+        background: #374151;
+        border: 1px solid #4b5563;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #f9fafb;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .file-label::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(0, 255, 136, 0.1),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .file-label:hover::before {
+        left: 100%;
+      }
+
+      .file-label:hover {
+        background-color: #4b5563;
+        border-color: #00ff88;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 255, 136, 0.2);
+      }
+
+      .file-status {
+        font-size: 14px;
+        color: #9ca3af;
+        white-space: nowrap;
+        transition: color 0.3s ease;
+      }
+
+      .submit-btn {
+        padding: 8px 16px;
+        background: #374151;
+        border: 1px solid #4b5563;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #f9fafb;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .submit-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(0, 255, 136, 0.2),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .submit-btn:hover::before {
+        left: 100%;
+      }
+
+      .submit-btn:hover {
+        background-color: #00ff88;
+        color: #000;
+        border-color: #00ff88;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 255, 136, 0.3);
+      }
+
+      .cancel-btn {
+        padding: 8px 16px;
+        background: #6b7280;
+        border: 1px solid #6b7280;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #f9fafb;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .cancel-btn:hover {
+        background-color: #ef4444;
+        color: white;
+        border-color: #ef4444;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+      }
+
+      /* Profile Picture Upload Styles */
+      .profile-pic-container {
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: pulse 2s infinite;
+      }
+
+      .profile-pic-container:hover {
+        transform: scale(1.08) rotate(2deg);
+        box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+      }
+
+      .profile-pic-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: all 0.3s ease;
+        border-radius: 50%;
+        backdrop-filter: blur(2px);
+      }
+
+      .profile-pic-container:hover .profile-pic-overlay {
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.7);
+      }
+
+      .plus-icon {
+        color: white;
+        font-size: 2rem;
+        font-weight: bold;
+        background: rgba(0, 255, 136, 0.8);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+      }
+
+      .profile-pic-container:hover .plus-icon {
+        transform: scale(1.2) rotate(90deg);
+        background: rgba(0, 255, 136, 1);
+        box-shadow: 0 0 30px rgba(0, 255, 136, 0.8);
+      }
+
+      /* Pinterest Style Masonry Layout */
+      .container {
+        padding-top: 20px;
+        width: 1400px;
+        margin: auto;
+        columns: 6;
+        column-gap: 20px;
+      }
+
+      .container .box {
+        width: 100%;
+        margin-bottom: 10px;
+        break-inside: avoid;
+        border-radius: 15px;
+        background: #1f2937;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid #374151;
+        position: relative;
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      .container .box::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          45deg,
+          transparent,
+          rgba(0, 255, 136, 0.1),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      .container .box:hover::before {
+        opacity: 1;
+      }
+
+      .container .box:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5),
+          0 0 20px rgba(0, 255, 136, 0.2);
+        border-color: #00ff88;
+      }
+
+      .container .box img {
+        max-width: 100%;
+        min-width: 100%;
+        border-radius: 10px;
+        display: block;
+        height: auto;
+        width: 100%;
+        object-fit: contain;
+        transition: all 0.4s ease;
+        filter: brightness(0.9);
+        padding-bottom: 15px;
+        cursor: pointer;
+      }
+
+      .container .box:hover img {
+        filter: brightness(1.1);
+        transform: scale(1.05);
+      }
+
+      .caption {
+        color: #f9fafb;
+        font-family: Arial, Helvetica, sans-serif;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 500;
+        background: #1f2937;
+        transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
+      }
+
+      .container .box:hover .caption {
+        color: #00ff88;
+        text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 1427px) {
+        .container {
+          columns: 5;
+          width: calc(100% - 40px);
+        }
+      }
+
+      @media (max-width: 1200px) {
+        .container {
+          columns: 4;
+        }
+      }
+
+      @media (max-width: 1000px) {
+        .container {
+          columns: 3;
+        }
+      }
+
+      @media (max-width: 786px) {
+        .container {
+          columns: 2;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          columns: 1;
+        }
+      }
+
+      .container img:hover {
+        opacity: 0.95;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        transform: scale(1.02);
+        transition: all 0.3s ease;
+      }
+
+      @media (max-width: 1427px) {
+        .container {
+          columns: 4;
+          width: 95%;
+        }
+      }
+      @media (max-width: 1200px) {
+        .container {
+          columns: 3;
+          width: 95%;
+        }
+      }
+      @media (max-width: 1000px) {
+        .container {
+          columns: 2;
+          width: 95%;
+        }
+      }
+      @media (max-width: 786px) {
+        .container {
+          columns: 2;
+          width: 95%;
+        }
+      }
+      @media (max-width: 480px) {
+        .container {
+          columns: 1;
+          width: 95%;
+        }
+      }
+
+      /* Saved Section Styles */
+      .saved-section {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+      }
+
+      .empty-saved {
+        background: #1f2937;
+        border-radius: 12px;
+        border: 2px dashed #4b5563;
+      }
+
+      .empty-icon svg {
+        opacity: 0.6;
+      }
+
+      .empty-saved a {
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .empty-saved a:hover {
+        color: #00ff88;
+        transform: translateY(-2px);
+      }
+
+      /* Keyframe Animations */
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(0, 255, 136, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(0, 255, 136, 0);
+        }
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* Modal styles for profile */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(8px);
+      }
+
+      .modal-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: transparent;
+      }
+
+      .modal-content {
+        position: relative;
+        max-width: 90%;
+        max-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        overflow: hidden;
+        background: transparent;
+      }
+
+      .modal-image-container {
+        position: relative;
+        flex: 1;
+        max-width: 35%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        max-height: 80vh;
+        overflow: hidden;
+        padding-top: 20px;
+        background: transparent;
+      }
+
+      .modal img {
+        max-width: 100%;
+        max-height: 70vh;
+        width: auto;
+        height: auto;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        display: block;
+        object-fit: contain;
+        margin: 10px;
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+
+      .modal-sidebar {
+        position: relative;
+        width: 200px;
+        background: transparent;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        max-height: 80vh;
+        overflow: hidden;
+        padding-top: 20px;
+      }
+
+      .close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: #fff;
+        font-size: 32px;
+        font-weight: 300;
+        cursor: pointer;
+        z-index: 2001;
+        background: rgba(0, 0, 0, 0.5);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+
+      .close:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.1);
+      }
+
+      .delete-btn {
+        background: transparent;
+        color: #ef4444;
+        border: 2px solid #ef4444;
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 24px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 150px;
+        width: 100%;
+      }
+
+      .delete-btn:hover {
+        background: #ef4444;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+      }
+
+      .delete-icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+
+      /* Unsave button styles */
+      .unsave-btn {
+        background: transparent;
+        color: #f59e0b;
+        border: 2px solid #f59e0b;
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 24px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-width: 150px;
+        width: 100%;
+      }
+
+      .unsave-btn:hover {
+        background: #f59e0b;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+      }
+
+      .unsave-icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+      }
+
+      .close-saved {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: #fff;
+        font-size: 32px;
+        font-weight: 300;
+        cursor: pointer;
+        z-index: 2001;
+        background: rgba(0, 0, 0, 0.5);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+
+      .close-saved:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.1);
+      }
+
+      /* Responsive design for modal */
+      @media (max-width: 768px) {
+        .modal-content {
+          flex-direction: column;
+          gap: 20px;
+          max-height: 95vh;
+        }
+
+        .modal-image-container {
+          max-width: 100%;
+          max-height: 60vh;
+          padding-top: 15px;
+        }
+
+        .modal img {
+          max-height: 60vh;
+          margin: 8px;
+        }
+
+        .modal-sidebar {
+          width: 100%;
+          max-width: 300px;
+          padding: 20px;
+          max-height: auto;
+          padding-top: 15px;
+        }
+
+        .delete-btn,
+        .unsave-btn {
+          padding: 12px 24px;
+          font-size: 14px;
+          min-width: 120px;
+        }
+
+        .delete-icon,
+        .unsave-icon {
+          width: 18px;
+          height: 18px;
+        }
+      }
+
+      /* Success message styles */
+      .success-message {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #10b981;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        z-index: 3000;
+        animation: slideInRight 0.5s ease;
+        max-width: 350px;
+      }
+
+      .success-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .success-icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+        flex-shrink: 0;
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      /* Username mobile styling */
+      .username-mobile {
+        background: transparent;
+        padding: 8px 16px;
+        border-radius: 20px;
+        display: inline-block;
+      }
+
+      @media (max-width: 768px) {
+        .username-mobile {
+          background: rgba(0, 0, 0, 0.8);
+          color: #00ff88 !important;
+          padding: 10px 20px;
+          border-radius: 25px;
+          font-weight: 600;
+          box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
+          border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+      }
+
+      /* Stagger animation for boxes */
+      .container .box:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .container .box:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .container .box:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      .container .box:nth-child(4) {
+        animation-delay: 0.4s;
+      }
+      .container .box:nth-child(5) {
+        animation-delay: 0.5s;
+      }
+      .container .box:nth-child(6) {
+        animation-delay: 0.6s;
+      }
+    </style>
+
+    <script>
+      // Update file status when file is selected
+      document
+        .getElementById("file-input")
+        .addEventListener("change", function () {
+          const fileStatus = document.querySelector(".file-status");
+          if (this.files.length > 0) {
+            fileStatus.textContent = this.files[0].name;
+          } else {
+            fileStatus.textContent = "No file chosen";
+          }
+        });
+
+      // Upload form toggle functionality
+      document
+        .getElementById("upload-toggle-btn")
+        .addEventListener("click", function () {
+          const uploadForm = document.getElementById("upload-form-container");
+          const buttonSection = document.querySelector(
+            ".upload-button-section"
+          );
+
+          // Hide the button and show the form
+          buttonSection.style.display = "none";
+          uploadForm.style.display = "block";
+        });
+
+      // Cancel upload functionality
+      function cancelUpload() {
+        const uploadForm = document.getElementById("upload-form-container");
+        const buttonSection = document.querySelector(".upload-button-section");
+
+        // Hide the form and show the button
+        uploadForm.style.display = "none";
+        buttonSection.style.display = "flex";
+
+        // Reset form fields
+        const form = document.getElementById("upload-form");
+        form.reset();
+        document.querySelector(".file-status").textContent = "No file chosen";
+      }
+
+      // Profile picture upload functionality
+      document
+        .querySelector(".profile-pic-container")
+        .addEventListener("click", function () {
+          document.getElementById("profile-pic-input").click();
+        });
+
+      document
+        .getElementById("profile-pic-input")
+        .addEventListener("change", function () {
+          if (this.files.length > 0) {
+            const file = this.files[0];
+            const formData = new FormData();
+            formData.append("profilePic", file);
+
+            fetch("/upload-profile-pic", {
+              method: "POST",
+              body: formData,
+            })
+              .then((response) => response.json())
+              .then((data) => {
+                if (data.success) {
+                  // Update the profile picture with the saved filename
+                  document.querySelector(".profile-pic").src =
+                    "/images/uploads/" + data.filename;
+                  alert("Profile picture uploaded successfully!");
+                } else {
+                  alert("Failed to upload profile picture: " + data.message);
+                }
+              })
+              .catch((error) => {
+                console.error("Error:", error);
+                alert("Error uploading profile picture. Please try again.");
+              });
+          }
+        });
+
+      // Handle upload form submission
+      document
+        .getElementById("upload-form")
+        .addEventListener("submit", function (e) {
+          // Show loading state
+          const submitBtn = this.querySelector(".submit-btn");
+          const originalText = submitBtn.textContent;
+          submitBtn.textContent = "Uploading...";
+          submitBtn.disabled = true;
+
+          // The form will submit normally, and the backend will redirect to /profile
+          // which will refresh the page and show the upload button again
+        });
+
+      // Reset form after successful upload (when page loads)
+      window.addEventListener("load", function () {
+        const uploadForm = document.getElementById("upload-form-container");
+        const buttonSection = document.querySelector(".upload-button-section");
+
+        // If form is visible, hide it and show button
+        if (uploadForm.style.display === "block") {
+          uploadForm.style.display = "none";
+          buttonSection.style.display = "flex";
+        }
+
+        // Reset form fields
+        const form = document.getElementById("upload-form");
+        form.reset();
+        document.querySelector(".file-status").textContent = "No file chosen";
+
+        // Show success message if upload was successful
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("upload") === "success") {
+          const successMessage = document.getElementById("success-message");
+          successMessage.style.display = "block";
+
+          // Hide message after 5 seconds
+          setTimeout(() => {
+            successMessage.style.display = "none";
+          }, 5000);
+        }
+      });
+
+      // Image modal functionality
+      const modal = document.getElementById("imageModal");
+      const modalImg = document.getElementById("modalImage");
+      const deleteBtn = document.getElementById("deleteBtn");
+      const closeBtn = document.querySelector(".close");
+
+      let currentPostId = "";
+
+      function openImageModal(imageSrc, caption, postId) {
+        modal.style.display = "block";
+        modalImg.src = imageSrc;
+        currentPostId = postId;
+      }
+
+      // Saved image modal functionality
+      const savedModal = document.getElementById("savedImageModal");
+      const savedModalImg = document.getElementById("savedModalImage");
+      const unsaveBtn = document.getElementById("unsaveBtn");
+      const closeSavedBtn = document.querySelector(".close-saved");
+
+      let currentSavedImageIndex = -1;
+
+      function openSavedImageModal(imageSrc, caption, index) {
+        savedModal.style.display = "block";
+        savedModalImg.src = imageSrc;
+        currentSavedImageIndex = index;
+      }
+
+      // Add click event listeners for saved images
+      document.addEventListener("DOMContentLoaded", function () {
+        const savedImages = document.querySelectorAll(".saved-image-clickable");
+        savedImages.forEach(function (img) {
+          img.addEventListener("click", function () {
+            const imageUrl = this.getAttribute("data-image-url");
+            const caption = this.getAttribute("data-caption");
+            const index = parseInt(this.getAttribute("data-index"));
+            openSavedImageModal(imageUrl, caption, index);
+          });
+        });
+      });
+
+      // Close modal when clicking X
+      closeBtn.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      // Close saved modal when clicking X
+      closeSavedBtn.onclick = function () {
+        savedModal.style.display = "none";
+      };
+
+      // Close modal when clicking outside
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+        if (event.target == savedModal) {
+          savedModal.style.display = "none";
+        }
+      };
+
+      // Close modal with Escape key
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          modal.style.display = "none";
+          savedModal.style.display = "none";
+        }
+      });
+
+      // Delete image functionality
+      deleteBtn.addEventListener("click", async function () {
+        if (!currentPostId) {
+          alert("No post selected for deletion");
+          return;
+        }
+
+        if (
+          confirm(
+            "Are you sure you want to delete this image? This action cannot be undone."
+          )
+        ) {
+          try {
+            const response = await fetch("/delete-post", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                postId: currentPostId,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              alert("Image deleted successfully!");
+              modal.style.display = "none";
+              // Reload the page to reflect changes
+              location.reload();
+            } else {
+              alert("Failed to delete image: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error deleting image:", error);
+            alert("Failed to delete image. Please try again.");
+          }
+        }
+      });
+
+      // Unsave image functionality
+      unsaveBtn.addEventListener("click", async function () {
+        if (currentSavedImageIndex === -1) {
+          alert("No saved image selected for unsaving");
+          return;
+        }
+
+        if (
+          confirm(
+            "Are you sure you want to unsave this image? This action cannot be undone."
+          )
+        ) {
+          try {
+            const response = await fetch("/unsave-image", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                imageIndex: currentSavedImageIndex,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              alert("Image unsaved successfully!");
+              savedModal.style.display = "none";
+              // Reload the page to reflect changes
+              location.reload();
+            } else {
+              alert("Failed to unsave image: " + data.message);
+            }
+          } catch (error) {
+            console.error("Error unsaving image:", error);
+            alert("Failed to unsave image. Please try again.");
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
